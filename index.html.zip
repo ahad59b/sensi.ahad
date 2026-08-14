@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Global World Clock</title>
+    <style>
+        :root {
+            --bg-color: #0b0f19;
+            --card-bg: #161b26;
+            --text-main: #ffffff;
+            --text-muted: #6b7280;
+            --accent: #3b82f6;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        /* --- বিজ্ঞাপন স্ক্রিন (Ad Overlay Screen) --- */
+        #ad-screen {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background-color: #05070c;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            text-align: center;
+            padding: 20px;
+        }
+
+        .ad-box {
+            background: #111827;
+            border: 1px solid #1f2937;
+            padding: 40px 20px;
+            border-radius: 12px;
+            max-width: 400px;
+            width: 100%;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+        }
+
+        .ad-loader {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid var(--accent);
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .timer-text {
+            font-size: 18px;
+            color: var(--text-muted);
+            margin-top: 15px;
+        }
+
+        .seconds {
+            color: #ef4444;
+            font-weight: 700;
+            font-size: 22px;
+        }
+
+        /* --- ওয়ার্ল্ড ক্লক অ্যাপ স্ক্রিন --- */
+        #clock-app {
+            display: none;
+            width: 100%;
+            max-width: 800px;
+            padding: 20px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            font-size: 28px;
+            letter-spacing: -0.5px;
+        }
+
+        .clock-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 20px;
+        }
+
+        .clock-card {
+            background: var(--card-bg);
+            border: 1px solid #222b3c;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        .city {
+            font-size: 18px;
+            font-weight: 600;
+            color: var(--accent);
+            margin-bottom: 5px;
+        }
+
+        .time {
+            font-size: 32px;
+            font-weight: 700;
+            margin-bottom: 5px;
+            font-variant-numeric: tabular-nums;
+        }
+
+        .date {
+            font-size: 14px;
+            color: var(--text-muted);
+        }
+    </style>
+</head>
+<body>
+
+    <!-- বিজ্ঞাপন লোডিং এবং ৩০ সেকেন্ডের স্ক্রিন -->
+    <div id="ad-screen">
+        <div class="ad-box">
+            <div class="ad-loader"></div>
+            <h3>বিজ্ঞাপন লোড হচ্ছে...</h3>
+            <p class="timer-text">অ্যাপটি চালু হতে বাকি: <span id="timer" class="seconds">30</span> সেকেন্ড</p>
+        </div>
+    </div>
+
+    <!-- মূল বিশ্ব ঘড়ি অ্যাপ্লিকেশন -->
+    <div id="clock-app">
+        <div class="header">
+            <h1>বিশ্ব ঘড়ি (World Clock)</h1>
+        </div>
+        <div class="clock-grid" id="clock-container">
+            <!-- জাভাস্ক্রিপ্ট দিয়ে ঘড়িগুলো এখানে যুক্ত হবে -->
+        </div>
+    </div>
+
+    <script>
+        // আপনার দেওয়া AdMob কনফিগারেশন (ভবিষ্যতের কম্পাইলারের জন্য সংরক্ষিত)
+        const admobConfig = {
+            appId: "ca-app-pub-5400148937245910~3718673135",
+            adUnitId: "ca-app-pub-5400148937245910/4607680603"
+        };
+
+        let countdownTime = 30;
+        const timerDisplay = document.getElementById('timer');
+
+        // ৩০ সেকেন্ডের টাইমার কাউন্টডাউন
+        const interval = setInterval(() => {
+            countdownTime--;
+            timerDisplay.textContent = countdownTime;
+
+            // যখন টাইমার শেষ হবে
+            if (countdownTime <= 0) {
+                clearInterval(interval);
+                showMainApp();
+            }
+        }, 1000);
+
+        // অ্যাপের মূল স্ক্রিন দেখানোর ফাংশন
+        function showMainApp() {
+            // মোবাইল অ্যাপ ট্র্যাকার কল (যদি Cordova/Capacitor SDK ব্যবহার করা হয়)
+            if (window.AdMob) {
+                window.AdMob.showInterstitial(); 
+            }
+
+            document.getElementById('ad-screen').style.display = 'none';
+            const appView = document.getElementById('clock-app');
+            appView.style.display = 'block';
+            
+            // ঘড়ি চালু করা
+            startWorldClock();
+        }
+
+        // --- বিশ্ব ঘড়ির ডাটা ও লজিক ---
+        const timeZones = [
+            { name: "বাংলাদেশ (স্থানীয় সময়)", zone: null, local: true },
+            { name: "লন্ডন (যুক্তরাজ্য)", zone: "Europe/London" },
+            { name: "নিউ ইয়র্ক (যুক্তরাষ্ট্র)", zone: "America/New_York" },
+            { name: "টোকিও (জাপান)", zone: "Asia/Tokyo" },
+            { name: "সৌদি আরব (রিয়াদ)", zone: "Asia/Riyadh" }
+        ];
+
+        function startWorldClock() {
+            const container = document.getElementById('clock-container');
+            container.innerHTML = ''; // ক্লিয়ার করা
+
+            timeZones.forEach((tz, index) => {
+                const card = document.createElement('div');
+                card.className = 'clock-card';
+                card.innerHTML = `
+                    <div class="city">${tz.name}</div>
+                    <div class="time" id="time-${index}">00:00:00</div>
+                    <div class="date" id="date-${index}">Loading...</div>
+                `;
+                container.appendChild(card);
+            });
+
+            updateClocks();
+            setInterval(updateClocks, 1000);
+        }
+
+        function updateClocks() {
+            const now = new Date();
+
+            timeZones.forEach((tz, index) => {
+                const timeEl = document.getElementById(`time-${index}`);
+                const dateEl = document.getElementById(`date-${index}`);
+
+                let timeOptions = { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true };
+                let dateOptions = { weekday: 'long', year: 'numeric', month: 'short', day: 'numeric' };
+
+                if (!tz.local && tz.zone) {
+                    timeOptions.timeZone = tz.zone;
+                    dateOptions.timeZone = tz.zone;
+                }
+
+                timeEl.textContent = now.toLocaleTimeString('en-US', timeOptions);
+                dateEl.textContent = now.toLocaleDateString('bn-BD', dateOptions);
+            });
+        }
+    </script>
+</body>
+</html>
